@@ -1,0 +1,19 @@
+services:
+  e2e:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    environment:
+      ENV: ${ENV:-qa}
+      TEST_TARGET: ${TEST_TARGET:-local}
+      BASE_URL: ${BASE_URL:-https://demo.realworld.show}
+      API_URL: ${API_URL:-https://api.realworld.show/api}
+      BROWSERSTACK_USERNAME: ${BROWSERSTACK_USERNAME:-}
+      BROWSERSTACK_ACCESS_KEY: ${BROWSERSTACK_ACCESS_KEY:-}
+      BROWSERSTACK_BUILD_NAME: ${BROWSERSTACK_BUILD_NAME:-}
+      BROWSERSTACK_LOCAL: ${BROWSERSTACK_LOCAL:-false}
+      CI: "true"
+    volumes:
+      - ./reports:/app/reports
+      - ./test-results:/app/test-results
+    command: sh -c "${TEST_COMMAND:-npm run test:smoke}"

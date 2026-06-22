@@ -1,0 +1,122 @@
+name: Playwright E2E
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  smoke-pr:
+    name: Pull Request Smoke Suite
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run smoke suite in Docker
+        run: |
+          ENV=qa TEST_COMMAND="npm run test:smoke -- --project=chromium --workers=1" \
+            docker compose up --build --abort-on-container-exit --exit-code-from e2e
+
+      - name: Upload Playwright artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-smoke-pr-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 14
+          if-no-files-found: warn
+          path: |
+            reports/
+            test-results/
+
+  full-main:
+    name: Main Branch Full Suite
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run full suite in Docker
+        run: |
+          ENV=qa TEST_COMMAND="npx playwright test --project=chromium --workers=1" \
+            docker compose up --build --abort-on-container-exit --exit-code-from e2e
+
+      - name: Upload Playwright artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-full-main-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 14
+          if-no-files-found: warn
+          path: |
+            reports/
+            test-results/
+
+  nightly-cross-browser:
+    name: Nightly Cross-Browser Suite
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [chromium, firefox, webkit, mobile-chrome, mobile-safari]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run ${{ matrix.project }} in Docker
+        run: |
+          ENV=qa TEST_COMMAND="npx playwright test --project=${{ matrix.project }} --workers=1" \
+            docker compose up --build --abort-on-container-exit --exit-code-from e2e
+
+      - name: Upload Playwright artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-${{ matrix.project }}-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 14
+          if-no-files-found: warn
+          path: |
+            reports/
+            test-results/
+
+  browserstack:
+    name: BrowserStack Suite
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        project:
+          - browserstack-chrome-windows
+          - browserstack-firefox-windows
+          - browserstack-webkit-osx
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run ${{ matrix.project }} on BrowserStack
+        env:
+          BROWSERSTACK_USERNAME: ${{ secrets.BROWSERSTACK_USERNAME }}
+          BROWSERSTACK_ACCESS_KEY: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+          BROWSERSTACK_BUILD_NAME: hands-on-playwright-${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          ENV=qa TEST_TARGET=browserstack TEST_COMMAND="npx playwright test --project=${{ matrix.project }} --workers=1" \
+            docker compose up --build --abort-on-container-exit --exit-code-from e2e
+
+      - name: Upload Playwright artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-${{ matrix.project }}-${{ github.run_id }}-${{ github.run_attempt }}
+          retention-days: 14
+          if-no-files-found: warn
+          path: |
+            reports/
+            test-results/

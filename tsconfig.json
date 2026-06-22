@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "types": ["node", "@playwright/test"],
+    "baseUrl": ".",
+    "paths": {
+      "@api/*": ["api/*"],
+      "@config/*": ["config/*"],
+      "@factories/*": ["factories/*"],
+      "@fixtures/*": ["fixtures/*"],
+      "@models/*": ["models/*"],
+      "@ui/*": ["ui/*"],
+      "@utils/*": ["utils/*"]
+    }
+  },
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules", "reports", "test-results"]
+}
