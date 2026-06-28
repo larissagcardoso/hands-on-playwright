@@ -155,6 +155,9 @@ For GitHub Actions, configure these repository secrets:
 - `BROWSERSTACK_USERNAME`
 - `BROWSERSTACK_ACCESS_KEY`
 
+BrowserStack is optional in the manual GitHub Actions workflow. Use the `run_browserstack`
+input when dispatching the workflow to run this matrix; it is disabled by default.
+
 ## Environments
 
 The active environment is selected with `ENV`.
@@ -187,7 +190,7 @@ GitHub Actions workflow:
 - Pushes to `main`: Chromium full suite in Docker with one worker
 - Weekly Monday schedule: Docker cross-browser matrix across desktop and mobile projects
 - Manual workflow dispatch: Docker cross-browser execution
-- Manual workflow dispatch: BrowserStack matrix execution when BrowserStack secrets are configured
+- Manual workflow dispatch: optional BrowserStack matrix execution with `run_browserstack`
 - Each execution uploads `reports/` and `test-results/` as GitHub Actions artifacts
 
 The HTML report is generated at:

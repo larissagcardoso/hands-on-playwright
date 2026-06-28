@@ -8,6 +8,12 @@ on:
   schedule:
     - cron: '0 3 * * 1'
   workflow_dispatch:
+    inputs:
+      run_browserstack:
+        description: 'Run BrowserStack suite'
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   smoke-pr:
@@ -88,7 +94,7 @@ jobs:
 
   browserstack:
     name: BrowserStack Suite
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' && inputs.run_browserstack
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
