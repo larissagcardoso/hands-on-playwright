@@ -16,7 +16,7 @@ API documentation: https://realworld-docs.netlify.app/
 - Multi-browser execution: Chromium, Firefox, WebKit, Mobile Chrome, Mobile Safari
 - Multi-environment configuration: QA, Staging, Production
 - Dockerized execution
-- GitHub Actions pipeline for pull requests, main branch, and nightly runs
+- GitHub Actions pipeline for pull requests, main branch, and weekly runs
 - HTML, list, and JUnit reporting
 - Screenshots and videos on failure, traces on retry
 
@@ -185,7 +185,7 @@ GitHub Actions workflow:
 
 - Pull requests to `main`: smoke suite in Docker
 - Pushes to `main`: Chromium full suite in Docker with one worker
-- Nightly schedule: Docker cross-browser matrix across desktop and mobile projects
+- Weekly Monday schedule: Docker cross-browser matrix across desktop and mobile projects
 - Manual workflow dispatch: Docker cross-browser execution
 - Manual workflow dispatch: BrowserStack matrix execution when BrowserStack secrets are configured
 - Each execution uploads `reports/` and `test-results/` as GitHub Actions artifacts

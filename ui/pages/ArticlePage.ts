@@ -37,10 +37,12 @@ export class ArticlePage {
   }
 
   async favorite(): Promise<void> {
+    await this.favoriteButton.waitFor({ state: 'visible' });
     await this.favoriteButton.click();
   }
 
   async delete(): Promise<void> {
+    await this.deleteButton.waitFor({ state: 'visible' });
     await this.deleteButton.click();
   }
 }

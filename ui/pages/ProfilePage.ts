@@ -1,13 +1,21 @@
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 
 export class ProfilePage {
-  constructor(private readonly page: Page) {}
+  readonly favoritedArticlesLink: Locator;
+
+  constructor(private readonly page: Page) {
+    this.favoritedArticlesLink = page.getByRole('link', { name: /favorited (posts|articles)/i });
+  }
 
   async goto(username: string): Promise<void> {
     await this.page.goto(`/profile/${username}`);
+    await this.favoritedArticlesLink.waitFor({ state: 'visible' });
   }
 
   async openFavoritedArticles(): Promise<void> {
-    await this.page.getByRole('link', { name: 'Favorited Posts' }).click();
+    await Promise.all([
+      this.page.waitForURL(/\/profile\/.+\/favorites/),
+      this.favoritedArticlesLink.click()
+    ]);
   }
 }

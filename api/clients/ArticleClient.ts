@@ -5,6 +5,10 @@ type ArticleResponse = {
   article: CreatedArticle;
 };
 
+type ArticlesResponse = {
+  articles: CreatedArticle[];
+};
+
 export class ArticleClient {
   constructor(
     private readonly request: APIRequestContext,
@@ -53,6 +57,35 @@ export class ArticleClient {
     return body.article;
   }
 
+  async listByFavorited(username: string): Promise<CreatedArticle[]> {
+    const response = await this.request.get(`articles?favorited=${encodeURIComponent(username)}`, {
+      headers: this.authHeaders()
+    });
+
+    if (!response.ok()) {
+      throw new Error(`List favorited articles failed: ${response.status()} ${await response.text()}`);
+    }
+
+    const body = (await response.json()) as ArticlesResponse;
+    return body.articles;
+  }
+
+  async waitUntilFavorited(slug: string, username: string): Promise<void> {
+    const timeoutAt = Date.now() + 30_000;
+
+    while (Date.now() < timeoutAt) {
+      const articles = await this.listByFavorited(username);
+
+      if (articles.some((article) => article.slug === slug)) {
+        return;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    }
+
+    throw new Error(`Article ${slug} was not listed as favorited by ${username}`);
+  }
+
   async delete(slug: string): Promise<void> {
     const response = await this.request.delete(`articles/${slug}`, {
       headers: this.authHeaders()
@@ -68,7 +101,7 @@ export class ArticleClient {
   }
 
   private async waitUntilAvailable(slug: string): Promise<void> {
-    const timeoutAt = Date.now() + 5_000;
+    const timeoutAt = Date.now() + 30_000;
     let lastError: unknown;
 
     while (Date.now() < timeoutAt) {

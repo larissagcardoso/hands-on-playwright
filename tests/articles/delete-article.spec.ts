@@ -14,6 +14,7 @@ test.describe('Articles', () => {
     await loginPage.goto();
     await loginPage.login(authenticatedUser.email, authenticatedUser.password);
     await page.goto(`/article/${article.slug}`);
+    await expect(page.getByRole('heading', { name: article.title })).toBeVisible();
     await articlePage.delete();
 
     await expect(page).toHaveURL(/\/$/);
