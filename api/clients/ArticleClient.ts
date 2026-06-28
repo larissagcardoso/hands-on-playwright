@@ -45,16 +45,43 @@ export class ArticleClient {
   }
 
   async favorite(slug: string): Promise<CreatedArticle> {
-    const response = await this.request.post(`articles/${slug}/favorite`, {
+    const timeoutAt = Date.now() + 30_000;
+    let lastError: unknown;
+
+    while (Date.now() < timeoutAt) {
+      const response = await this.request.post(`articles/${slug}/favorite`, {
+        headers: this.authHeaders()
+      });
+
+      if (response.ok()) {
+        const body = (await response.json()) as ArticleResponse;
+        return body.article;
+      }
+
+      const message = `Favorite article failed: ${response.status()} ${await response.text()}`;
+
+      if (response.status() !== 404) {
+        throw new Error(message);
+      }
+
+      lastError = new Error(message);
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    }
+
+    throw lastError;
+  }
+
+  async listGlobal(limit = 10): Promise<CreatedArticle[]> {
+    const response = await this.request.get(`articles?limit=${limit}`, {
       headers: this.authHeaders()
     });
 
     if (!response.ok()) {
-      throw new Error(`Favorite article failed: ${response.status()} ${await response.text()}`);
+      throw new Error(`List articles failed: ${response.status()} ${await response.text()}`);
     }
 
-    const body = (await response.json()) as ArticleResponse;
-    return body.article;
+    const body = (await response.json()) as ArticlesResponse;
+    return body.articles;
   }
 
   async listByFavorited(username: string): Promise<CreatedArticle[]> {

@@ -1,5 +1,4 @@
 import { test, expect } from '../../fixtures/browser.fixture';
-import { ArticleFactory } from '../../factories/ArticleFactory';
 
 test.describe('Profile', () => {
   test('favorites an article and displays it in the profile', async ({
@@ -9,7 +8,11 @@ test.describe('Profile', () => {
     profilePage,
     page
   }) => {
-    const article = await authenticatedArticleClient.create(ArticleFactory.create());
+    const articles = await authenticatedArticleClient.listGlobal();
+    const article = articles[0];
+
+    expect(article, 'Expected at least one article in the global feed').toBeTruthy();
+
     await authenticatedArticleClient.favorite(article.slug);
     await authenticatedArticleClient.waitUntilFavorited(article.slug, authenticatedUser.username);
 
